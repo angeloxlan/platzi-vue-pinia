@@ -13,15 +13,18 @@ const end = ref(null)
 const channelId = ref(null)
 const title = ref('')
 
-const messagesView = computed(() => messagesStore.messages.map((message) => {
-  const author = contactsStore.contacts.find((p) => p.id === message.author)
-  if (!author) return message;
-    return {
-    ...message,
-    author,
-    self: author.id === 1
-  }
-}))
+const messagesView = computed(() => {
+  return messagesStore.findMessagesByChannelID(channelId.value)
+    .map((message) => {
+      const author = contactsStore.contacts.find((p) => p.id === message.author)
+      if (!author) return message;
+      return {
+        ...message,
+        author,
+        self: author.id === 1
+      }
+    })
+})
 
 const scrollToBottom = () => {
   end.value?.scrollIntoView({
