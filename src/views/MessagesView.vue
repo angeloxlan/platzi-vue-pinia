@@ -4,14 +4,17 @@ import { useRoute } from 'vue-router'
 import MessageItem from '@/components/MessageItem.vue'
 import useMessagesStore from '@/stores/messages.js'
 import useContactsStore from '@/stores/contacts.js'
+import useChannelsStore from '@/stores/channels.js'
 
 const route = useRoute()
 const messagesStore = useMessagesStore();
 const contactsStore = useContactsStore();
+const channelsStore = useChannelsStore();
 
 const end = ref(null)
 const channelId = ref(null)
 const title = ref('')
+const message = ref('')
 
 const messagesView = computed(() => {
   return messagesStore.findMessagesByChannelID(channelId.value)
@@ -25,6 +28,19 @@ const messagesView = computed(() => {
       }
     })
 })
+
+const titleView = computed(() => {
+    const channel = channelsStore.channels.find((channel) => {
+        return channel.id == channelId.value;
+    })
+
+    return channel.name;
+})
+
+const addMessage = () => {
+    messagesStore.addMessage(channelId.value, message.value);
+    message.value = '';
+}
 
 const scrollToBottom = () => {
   end.value?.scrollIntoView({
@@ -47,7 +63,7 @@ scrollToBottom()
 <template>
   <div class="messages">
     <header>
-      <h2>{{ title }}</h2>
+      <h2>{{ titleView }}</h2>
       <div class="people-list">
         <div
           class="people-item"
@@ -70,12 +86,12 @@ scrollToBottom()
       />
       <span ref="end"></span>
     </div>
-    <footer>
-      <textarea rows="3"></textarea>
+    <form @submit.prevent="addMessage">
+      <textarea rows="3" v-model="message" @keyup.enter="addMessage"></textarea>
       <button>
         <Icon icon="carbon:send-alt" />
       </button>
-    </footer>
+    </form>
   </div>
 </template>
 
@@ -100,7 +116,7 @@ scrollToBottom()
   .content {
     @apply flex flex-col gap-4 p-4 h-full overflow-y-auto;
   }
-  footer {
+  form {
     @apply flex p-2;
     textarea {
       @apply w-full px-2 py-2 resize-none bg-zinc-800 rounded-tl-md rounded-bl-md focus:outline-none;
